@@ -11,8 +11,6 @@ if (!profile || !['PRO', 'TECH'].includes(profile)) {
   process.exit(1)
 }
 
-console.log(`🚀 Запуск профиля: ${profile}`)
-
 const {
   MAIL_PASSWORD_TECH,
   MAIL_PASSWORD_PRO,
@@ -27,6 +25,11 @@ const SOURCE_MAIL = profile === 'PRO' ? SOURCE_MAIL_PRO : SOURCE_MAIL_TECH
 const MAIL_SERVER = profile === 'PRO' ? MAIL_SERVER_PRO : MAIL_SERVER_TECH
 const MAIL_PASSWORD = profile === 'PRO' ? MAIL_PASSWORD_PRO : MAIL_PASSWORD_TECH
 
+console.log(`🚀 Запуск профиля: ${profile}`)
+console.log(`📧 Email: ${SOURCE_MAIL}`)
+console.log(`🌐 Сервер: ${MAIL_SERVER}`)
+console.log(`🔒 Порт: ${profile === 'PRO' ? '587 (TLS)' : '465 (SSL)'}`)
+
 // Проверяем обязательные переменные
 if (!MAIL_PASSWORD || !TARGET_MAIL || !SOURCE_MAIL || !MAIL_SERVER) {
   console.error(
@@ -39,16 +42,34 @@ if (!MAIL_PASSWORD || !TARGET_MAIL || !SOURCE_MAIL || !MAIL_SERVER) {
   process.exit(1)
 }
 
-const transporter = nodemailer.createTransport({
-  host: MAIL_SERVER,
-  port: 465,
-  secure: true,
-  auth: {
-    user: SOURCE_MAIL,
-    pass: MAIL_PASSWORD,
-  },
-  name: 'amasters.tech',
-})
+const transportConfig =
+  profile === 'PRO'
+    ? {
+        host: MAIL_SERVER,
+        port: 587,
+        secure: false,
+        requireTLS: true,
+        tls: {
+          rejectUnauthorized: false, // Игнорируем SSL сертификат для PRO
+        },
+        auth: {
+          user: SOURCE_MAIL,
+          pass: MAIL_PASSWORD,
+        },
+        name: 'amasters.pro',
+      }
+    : {
+        host: MAIL_SERVER,
+        port: 465,
+        secure: true,
+        auth: {
+          user: SOURCE_MAIL,
+          pass: MAIL_PASSWORD,
+        },
+        name: 'amasters.tech',
+      }
+
+const transporter = nodemailer.createTransport(transportConfig)
 
 export async function sendTestMail(): Promise<void> {
   try {
