@@ -1,0 +1,39 @@
+{
+  "name": "mailtest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/mail-service.js",
+  "scripts": {
+    "build": "tsc",
+    "start-tech": "node dist/mail-service.js TECH",
+    "start-pro": "node dist/mail-service.js PRO",
+    "dev:tech": "tsx src/mail-service.ts TECH",
+    "dev:pro": "tsx src/mail-service.ts PRO",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "pm2:start:tech": "pm2 start ecosystem.tech.config.json",
+    "pm2:start:pro": "pm2 start ecosystem.pro.config.json",
+    "pm2:stop": "pm2 stop all",
+    "pm2:restart": "pm2 restart all",
+    "pm2:delete": "pm2 delete all",
+    "pm2:logs": "pm2 logs",
+    "pm2:status": "pm2 status"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "nodemailer": "^7.0.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.0.0"
+  }
+}
