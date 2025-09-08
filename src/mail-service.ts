@@ -28,7 +28,15 @@ const MAIL_PASSWORD = profile === 'PRO' ? MAIL_PASSWORD_PRO : MAIL_PASSWORD_TECH
 console.log(`🚀 Запуск профиля: ${profile}`)
 console.log(`📧 Email: ${SOURCE_MAIL}`)
 console.log(`🌐 Сервер: ${MAIL_SERVER}`)
-console.log(`🔒 Порт: ${profile === 'PRO' ? '587 (TLS)' : '465 (SSL)'}`)
+console.log(
+  `🔒 Порт: ${
+    profile === 'PRO' ? '587 (TLS + servername fix)' : '465 (SSL стандартный)'
+  }`
+)
+if (profile === 'PRO') {
+  console.log(`❌ SSL сертификат НЕ заменён - всё ещё для *.hosting.reg.ru`)
+  console.log(`🔧 Используем servername fix до замены сертификата`)
+}
 
 // Проверяем обязательные переменные
 if (!MAIL_PASSWORD || !TARGET_MAIL || !SOURCE_MAIL || !MAIL_SERVER) {
@@ -42,15 +50,16 @@ if (!MAIL_PASSWORD || !TARGET_MAIL || !SOURCE_MAIL || !MAIL_SERVER) {
   process.exit(1)
 }
 
+// SSL сертификат НЕ заменён - возвращаем рабочую конфигурацию
 const transportConfig =
   profile === 'PRO'
     ? {
-        host: MAIL_SERVER,
+        host: MAIL_SERVER, // mail.amasters.pro
         port: 587,
         secure: false,
         requireTLS: true,
         tls: {
-          rejectUnauthorized: false, // Игнорируем SSL сертификат для PRO
+          servername: 'sm30.hosting.reg.ru', // SSL сертификат fix (НЕ заменён!)
         },
         auth: {
           user: SOURCE_MAIL,
@@ -59,7 +68,7 @@ const transportConfig =
         name: 'amasters.pro',
       }
     : {
-        host: MAIL_SERVER,
+        host: MAIL_SERVER, // sm30.hosting.reg.ru
         port: 465,
         secure: true,
         auth: {

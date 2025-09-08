@@ -5,6 +5,7 @@
   "main": "dist/mail-service.js",
   "scripts": {
     "build": "tsc",
+    "start": "npm run build && node dist/mail-service.js PRO",
     "start-tech": "node dist/mail-service.js TECH",
     "start-pro": "node dist/mail-service.js PRO",
     "dev:tech": "tsx src/mail-service.ts TECH",
