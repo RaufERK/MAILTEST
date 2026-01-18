@@ -3,80 +3,35 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// Получаем профиль из аргументов командной строки
-const profile = process.argv[2]?.toUpperCase()
-if (!profile || !['PRO', 'TECH'].includes(profile)) {
-  console.error('Укажите профиль: PRO или TECH')
-  console.error('Пример: npm run dev PRO')
-  process.exit(1)
-}
+const { MAIL_PASSWORD, TARGET_MAIL, SOURCE_MAIL, MAIL_SERVER } = process.env
 
-const {
-  MAIL_PASSWORD_TECH,
-  MAIL_PASSWORD_PRO,
-  TARGET_MAIL,
-  SOURCE_MAIL_PRO,
-  SOURCE_MAIL_TECH,
-  MAIL_SERVER_PRO,
-  MAIL_SERVER_TECH,
-} = process.env
-
-const SOURCE_MAIL = profile === 'PRO' ? SOURCE_MAIL_PRO : SOURCE_MAIL_TECH
-const MAIL_SERVER = profile === 'PRO' ? MAIL_SERVER_PRO : MAIL_SERVER_TECH
-const MAIL_PASSWORD = profile === 'PRO' ? MAIL_PASSWORD_PRO : MAIL_PASSWORD_TECH
-
-console.log(`🚀 Запуск профиля: ${profile}`)
+console.log('🚀 Запуск mail service')
 console.log(`📧 Email: ${SOURCE_MAIL}`)
 console.log(`🌐 Сервер: ${MAIL_SERVER}`)
-console.log(
-  `🔒 Порт: ${
-    profile === 'PRO' ? '587 (TLS + servername fix)' : '465 (SSL стандартный)'
-  }`
-)
-if (profile === 'PRO') {
-  console.log(`❌ SSL сертификат НЕ заменён - всё ещё для *.hosting.reg.ru`)
-  console.log(`🔧 Используем servername fix до замены сертификата`)
-}
+console.log('🔒 Порт: 587 (TLS + servername fix)')
+console.log('❌ SSL сертификат НЕ заменён - всё ещё для *.hosting.reg.ru')
+console.log('🔧 Используем servername fix до замены сертификата')
 
-// Проверяем обязательные переменные
 if (!MAIL_PASSWORD || !TARGET_MAIL || !SOURCE_MAIL || !MAIL_SERVER) {
-  console.error(
-    'Отсутствуют обязательные переменные окружения для профиля',
-    profile
-  )
-  console.error(
-    `Нужны: MAIL_PASSWORD_${profile}, TARGET_MAIL, SOURCE_MAIL_${profile}, MAIL_SERVER_${profile}`
-  )
+  console.error('Отсутствуют обязательные переменные окружения')
+  console.error('Нужны: MAIL_PASSWORD, TARGET_MAIL, SOURCE_MAIL, MAIL_SERVER')
   process.exit(1)
 }
 
-// SSL сертификат НЕ заменён - возвращаем рабочую конфигурацию
-const transportConfig =
-  profile === 'PRO'
-    ? {
-        host: MAIL_SERVER, // mail.amasters.pro
-        port: 587,
-        secure: false,
-        requireTLS: true,
-        tls: {
-          servername: 'sm30.hosting.reg.ru', // SSL сертификат fix (НЕ заменён!)
-        },
-        auth: {
-          user: SOURCE_MAIL,
-          pass: MAIL_PASSWORD,
-        },
-        name: 'amasters.pro',
-      }
-    : {
-        host: MAIL_SERVER, // sm30.hosting.reg.ru
-        port: 465,
-        secure: true,
-        auth: {
-          user: SOURCE_MAIL,
-          pass: MAIL_PASSWORD,
-        },
-        name: 'amasters.tech',
-      }
+const transportConfig = {
+  host: MAIL_SERVER,
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  tls: {
+    servername: 'sm30.hosting.reg.ru',
+  },
+  auth: {
+    user: SOURCE_MAIL,
+    pass: MAIL_PASSWORD,
+  },
+  name: 'amasters.pro',
+}
 
 const transporter = nodemailer.createTransport(transportConfig)
 
@@ -85,10 +40,10 @@ export async function sendTestMail(): Promise<void> {
     const info = await transporter.sendMail({
       from: SOURCE_MAIL,
       to: TARGET_MAIL,
-      subject: `Тест профиля ${profile} через ${MAIL_SERVER}`,
+      subject: `Тест SMTP через ${MAIL_SERVER}`,
       text: 'Привет! Проверка SMTP/TLS.',
     })
-    console.log(`✅ ${profile}: Письмо отправлено!`, info.messageId)
+    console.log('✅ Письмо отправлено!', info.messageId)
     console.log(`📤 От: ${SOURCE_MAIL}`)
     console.log(`📥 Кому: ${TARGET_MAIL}`)
     console.log(`📡 Сервер: ${MAIL_SERVER}`)
